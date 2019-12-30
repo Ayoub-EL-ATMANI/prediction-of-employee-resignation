@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 
 class model:
     def __init__(self,path):
@@ -22,7 +23,7 @@ class model:
         dec = {'matrix' : co_M,'accury': accury}
         print(dec)
         return dec
-
+ 	#frequency table for 2 target (left = yes , left =no)
     def frequencyTable(self,pred):
         freq = pd.crosstab(index=self.data[pred],columns=self.data["left"])
         freq_tab = pd.DataFrame(freq) 
@@ -45,7 +46,7 @@ class model:
         #freq_tab['errors'] = errors
         #print(freq_tab)
         return freq_tab
-
+   	# calculate error frequency table on algo oneR    
     def calculerrorFre(self,pred):
         freq_tab = model.frequencyTable(self,pred)
         error_freq_tab = 0.0
@@ -145,7 +146,7 @@ class model:
         freq_table=self.frequencyTable(pred)
         probx = freq_table.loc[key][0] + freq_table.loc[key][1]
         return probx / self.data.left.count()
-          
+    #likelihood of predector (factor)      
     def likelihood(self,pred):
         like_lih = pd.crosstab(index=self.data[pred],columns=self.data['left'])
         like_lihood = pd.DataFrame(like_lih).astype(float)
@@ -160,32 +161,32 @@ class model:
         #print("somm no , somme yes ",prob_sum_no,prob_sum_yes)
         #print("test test : ",like_lihood.loc['passable'][1])
         return like_lihood
-
+   	# probability x of left equals no 
     def prob_class_x_no(self,pred,key):
         likelihod = self.likelihood(pred)
         pred = likelihod.loc[key][0] * self.prob_no(pred) / self.prob_x(pred,key)
         return pred
-    
+    # probability x of left equals yes
     def prob_class_x_yes(self,pred,key):
         likelihod = self.likelihood(pred)
         pred = likelihod.loc[key][1] * self.prob_yes(pred) / self.prob_x(pred,key)
         return pred
     #p(c|x) = p(x1|c) * p(x2|c) *p(x3|c) ... p(xn|c) * p(c)
-
+    # probability of value predector give left = no (employee is continue job in company )  (for example factor salary with value low ) 
     def predf_n(self,pred,key):
         likelihod = self.likelihood(pred)
         if likelihod.loc[key][0] == 0:
             likelihod.loc[key][0] = 1
         pred_x_c = likelihod.loc[key][0]
         return pred_x_c
-	
+    # probability of value predector give left = yes (employee is resign)  (for example factor salary with value low ) 	
     def predf_ye(self,pred,key):
         likelihod = self.likelihood(pred)
         if likelihod.loc[key][1] == 0:
             likelihod.loc[key][1] = 1
         pred_x_c = likelihod.loc[key][1]
         return pred_x_c
-
+   	# cette méthode donne est accepter les parametres (facteur et leur valeur) d'une maniere dynamique, mais si en donne plusieurs paramétre la méthode donne une résultas plus correct. (method for probability of employee continue your job (left == no)) 
     def pred_generale_no(self,**pred):
         result = list()
         produit = 1
@@ -196,7 +197,7 @@ class model:
         no = self.dt.loc[self.dt.left == 'no']    
         pred_n_gn = produit * (len(no) / self.data.left.count())
         return pred_n_gn
-    
+  	# cette méthode donne est accepter les parametres (facteur et leur valeur) d'une maniere dynamique, mais si en donne plusieurs paramétre la méthode donne une résultas plus correct. (method for probability of employee resign  (left == yes)) 
     def pred_generale_yes(self,**pred):
         result = list()
         produit = 1
